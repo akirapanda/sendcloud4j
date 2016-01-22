@@ -1,73 +1,79 @@
-# SendCloud SDK For Java 
+# SendCloud SDK For Java [![Maven Central](https://maven-badges.herokuapp.com/maven-central/io.jstack/sendcloud4j/badge.svg?style=flat)](https://maven-badges.herokuapp.com/maven-central/io.jstack/sendcloud4j)
 
 [![Travis CI Build Status](https://travis-ci.org/denger/sendcloud4j.svg)](https://travis-ci.org/denger/sendcloud4j)
-[![Coverage Status](https://coveralls.io/repos/akirapanda/sendcloud4j/badge.svg?branch=master&service=github)](https://coveralls.io/github/akirapanda/sendcloud4j?branch=master)
-[![Landscape Status](https://landscape.io/github/denger/sendcloud4j/master/landscape.svg?style=flat)](https://landscape.io/github/denger/sendcloud4j)
+[![Coverage Status](https://coveralls.io/repos/denger/sendcloud4j/badge.svg?branch=master&service=github)](https://coveralls.io/github/denger/sendcloud4j?branch=master)
+
 
 [SendCloud](http://sendcloud.sohu.com) SDK For Java
 
+* 支持 [邮箱API v2](http://sendcloud.sohu.com/doc/email_v2/send_email/#_2) 普通发送和模板发送
+* 支持批量发送(模块批量变量替换)
+* 支持添加附件发送
+
+
+
 ## Quick Start
+
+##### Maven
+
 ```xml
 <dependency>
 	<groupId>io.jstack</groupId>
 	<artifactId>sendcloud4j</artifactId>
-	<version>0.1-SNAPSHOT</version>
+	<version>0.0.4</version>
 <dependency>
 ```
 
-##### 发送 HTML 邮件
-```java
-// 通过 sendcloud 后台获取 api_user 和 api_key
-private String apiUser = "testApiUser";
-private String apiKey = "testApiKey";
+##### Gradle
 
-// 创建 API实例
-SendCloud webapi = SendCloud.createWebApi(apiUser, apiKey);
-
-// 构建邮件内容
-Email email = Email.general()
-            .from("from@test.com")
-            .fromName("denger")
-            .subject("this is subject")
-            .html("test html")
-            .to("denger.it@gmail.com");
-// 发送
-webapi.mail().send(email);
+```groovy
+compile 'io.jstack:sendcloud4j:0.0.4'
 ```
 
-##### 发送模板邮件
-```java
-// 通过 sendcloud 后台获取 api_user 和 api_key
-private String apiUser = "testApiUser";
-private String apiKey = "testApiKey";
+##### 代码示例
 
-// 创建 API实例
-SendCloud webapi = SendCloud.createWebApi(apiUser, apiKey);
+1. 初始化 API，通过 SendCloud 后台获取 apiUser 和 apiKey，创建 `SendCloud` 实例
+    ```java
+    private String apiUser = "testApiUser";
+    private String apiKey = "testApiKey";
+    SendCloud webapi = SendCloud.createWebApi(apiUser, apiKey);
+    ```
 
-// 构建模板邮件并替换模板变量
-Email email = Email.template("template_name")
-            .from("from@test.com")
-            .fromName("denger")
-            .substitutionVars(SubStitutionVars.sub().set("url", "http://www.baidu.com"))
-            .to("denger.it@gmail.com");
-// 发送
-webapi.mail().send(email);
-```
+1. 创建邮件实例，支持普通邮件和模板邮件。
 
-##### 处理发送结果
-1.返回值为字符串
-```
-webapi.mail().send(email);
-```
+   普通邮件，邮件内容支持 HTML 或文本:
+    ```java
+    Email email = Email.general()
+        .from("support@jstack.io")
+        .fromName("JStack Support")
+        .html("<b>Hello World!</b>")          // or .plain()
+        .subject("mail title")
+        .attachment(new File("att.png"))      // 添加附件 (File || byte[])
+        .to("denger.it@gmail.com");
+    ```
+    模块邮件，使用 `Substitution.sub()` 替换变量值:
+    ```java
+    Email email = Email.template("template_order_customer")
+        .from("support@jstack.io")
+        .fromName("JStack Support")
+        .substitutionVars(Substitution.sub()  // 模板变量替换
+                .set("product", "iPhone 6S")
+                .set("name", "denger"))
+        .attachment(new File("att.png"))      // 添加附件
+        .to("denger.it@gmail.com");
+    ```
 
-2.返回值为Result对象
-```
-Result result = webapi.mail().sendOut(email);
+1. 执行发送
+    ```java
+    Result result = webapi.mail().send(email);
+    ```
 
-//是否发送成功
-result.isSuccess();
-//获取错误信息
-result.getError();
-```
+1. 处理发送结果
+    ```java
+    result.isSuccess();      //API 请求是否成功
+    result.getStatusCode();  //API 返回码
+    result.getMessage();     //API 返回码的中文解释
+    ```
 
+*如果你有新需求或问题欢迎提 issues 或 fork :)*
 
